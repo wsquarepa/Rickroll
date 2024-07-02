@@ -157,7 +157,7 @@ app.use(async (req, res, next) => {
     const hmac = crypto.createHmac("sha256", VISITOR_ID_COOKIE_SECRET);
     hmac.update(visitorId);
 
-    res.cookie(VISITOR_ID_COOKIE_NAME, visitorId + "." + hmac.digest("base64"), { maxAge: 900000, httpOnly: true, domain: "." + DOMAIN });
+    res.cookie(VISITOR_ID_COOKIE_NAME, visitorId + "." + hmac.digest("base64"), { maxAge: 1000 * 60 * 60 * 24 * 365, httpOnly: true, domain: "." + DOMAIN });
 
     res.redirect(REDIRECT_URL);
 });
