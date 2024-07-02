@@ -45,6 +45,24 @@ h1 {
     position: relative;
 }
 
+.vpn-display {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 100%;
+    border-top-left-radius: 10px; /* very dynamic fix trust */
+    border-bottom-left-radius: 10px;
+}
+
+.vpn-display.clean {
+    background-color: lightgreen;
+}
+
+.vpn-display.dirty {
+    background-color: lightcoral;
+}
+
 .ip {
     flex: 1;
     position: relative;

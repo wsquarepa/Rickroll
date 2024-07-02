@@ -13,6 +13,7 @@
         <div class="results">
             <% for (let i = 0; i < data.length; i++) { %>
             <div class="result-item">
+                <div class='vpn-display <%- data[i].ipdata.vpn? "dirty":"clean" %>'></div>
                 <div class="ip">
                     <form class="inline-search" action='<%= query.base_route %>/ip' method='post'>
                         <input type='hidden' name='ip' value='<%- data[i].ip %>'>
@@ -21,7 +22,7 @@
                     <br><br>
                     <span>Provider: <%- data[i].ipdata.provider %></span><br>
                     <span>Location: <%- data[i].ipdata.city %>, <%- data[i].ipdata.country %></span><br>
-                    <span>VPN: <%- data[i].ipdata.vpn %></span>
+                    <span>VPN: <%- data[i].ipdata.vpn? "Yes":"No" %></span>
                     <br><br>
                     <span>Search By:</span>
                     <form class="inline-search" action='<%= query.base_route %>/visitor' method='post'>
