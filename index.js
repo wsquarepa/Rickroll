@@ -97,7 +97,7 @@ app.use(async (req, res, next) => {
     // check if ip is in database already
     const ipData = await get(`SELECT * FROM ips WHERE ip = ?`, [ip]);
 
-    if (!ipData) {
+    if (!ipData && PROXYCHECK_API_KEY) {
         const pcRequest = await fetch(`https://proxycheck.io/v2/${ip}?key=${PROXYCHECK_API_KEY}&vpn=1`);
 
         if (pcRequest.ok) {
