@@ -1,26 +1,30 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>Logger | Home</title>
-    </head>
-    <body>
+<head>
+    <title>Logger | Home</title>
+    <link rel="stylesheet" type="text/css" href="<%= base_route %>/css/index.css">
+</head>
+<body>
+    <div class="container">
         <h1>Select a Search Function</h1>
-        <div>
-            <form action='<%= base_route %>/ip' method='post'>
-                <input type='text' name='ip' placeholder='Search by IP Address'>
+        <div class="grid">
+            <form class="search-form" action='<%= base_route %>/ip' method='post'>
+                <input type='text' name='ip' placeholder='Search by IP Address' autocomplete='off'>
                 <button type='submit'>Search</button>
             </form>
-            <form action='<%= base_route %>/visitor' method='post'>
-                <input type='text' name='visitor' placeholder='Search by Visitor Name'>
+            <form class="search-form" action='<%= base_route %>/visitor' method='post'>
+                <input type='text' name='visitor' placeholder='Search by Visitor ID' autocomplete='off'>
                 <button type='submit'>Search</button>
             </form>
-            <form action='<%= base_route %>/host' method='post'>
-                <input type='text' name='host' placeholder='Search by Host Name'>
+            <form class="search-form" action='<%= base_route %>/host' method='post'>
+                <input type='text' name='host' placeholder='Search by Host Name' autocomplete='off'>
                 <button type='submit'>Search</button>
             </form>
-            <form action='<%= base_route %>/useragent' method='post'>
-                <input type='text' name='useragent' placeholder='Search by User Agent Fragment'>
+            <form class="search-form" action='<%= base_route %>/useragent' method='post'>
+                <input type='text' name='useragent' placeholder='Search by UA Fragment' autocomplete='off'>
                 <button type='submit'>Search</button>
             </form>
         </div>
-    </body>
+    </div>
+</body>
 </html>

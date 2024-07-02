@@ -132,6 +132,7 @@ webviewerRouter.use((req, res, next) => {
 });
 
 webviewerRouter.use("/css", express.static("src/css"));
+webviewerRouter.use("/js", express.static("src/js"));
 
 webviewerRouter.get("/", (req, res) => {
     res.render("index", { base_route: WEBVIEWER.PATH });

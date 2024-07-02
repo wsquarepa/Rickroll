@@ -1,19 +1,35 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>Logger | Search</title>
-    </head>
-    <body>
+<head>
+    <title>Logger | Search</title>
+    <link rel="stylesheet" type="text/css" href="<%= query.base_route %>/css/viewer.css">
+</head>
+<body>
+    <div class="container">
         <h1>Search Results | Page <%= query.page %></h1>
         <div class='return'>
             <a href='<%= query.base_route %>'>Return to Search</a>
         </div>
-        <div>
+        <div class="results">
             <% for (let i = 0; i < data.length; i++) { %>
-            <div>
-                <b><%- data[i].ip %></b> (<%- data[i].visitorId %>)<br>
-                <%- data[i].useragent %><br>
-                <%- data[i].method %> <%- data[i].url %> @ <%- data[i].uniqueHost %><br>
-                <%- data[i].timestamp %>
+            <div class="result-item">
+                <div class="ip" data-visitor-id="<%- data[i].visitorId %>" data-ip="<%- data[i].ip %>">
+                    <b><%- data[i].ip %></b>
+                    <div class="popout">
+                        <div>
+                            <button class="copy-button">Copy Visitor ID</button>
+                        </div>
+                        <div class="details">
+                            <p>Country Code: <span class="country-code"></span></p>
+                            <p>VPN: <span class="vpn"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="details">
+                    <span><%- data[i].useragent %></span><br>
+                    <span><%- data[i].method %> <%- data[i].url %> @ <%- data[i].uniqueHost %></span><br>
+                    <span><%- data[i].timestamp %></span>
+                </div>
             </div>
             <% } %>
         </div>
@@ -33,5 +49,7 @@
             </form>
             <% } %>
         </div>
-    </body>
+    </div>
+    <script src="<%= query.base_route %>/js/viewer.js"></script>
+</body>
 </html>
