@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Logger | Search</title>
+    </head>
+    <body>
+        <h1>Search Results | Page <%= query.page %></h1>
+        <div class='return'>
+            <a href='<%= query.base_route %>'>Return to Search</a>
+        </div>
+        <div>
+            <% for (let i = 0; i < data.length; i++) { %>
+            <div>
+                <b><%- data[i].ip %></b> (<%- data[i].visitorId %>)<br>
+                <%- data[i].useragent %><br>
+                <%- data[i].method %> <%- data[i].url %> @ <%- data[i].uniqueHost %><br>
+                <%- data[i].timestamp %>
+            </div>
+            <% } %>
+        </div>
+        <div class='pagination'>
+            <% if (query.page > 1) { %>
+            <form action='<%= query.base_route %>/<%= query.type %>' method='post'>
+                <input type='hidden' name='page' value='<%= query.page - 1 %>'>
+                <input type='hidden' name='<%= query.type %>' value='<%= query.data %>'>
+                <button type='submit'>Previous</button>
+            </form>
+            <% } %>
+            <% if (query.more) { %>
+            <form action='<%= query.base_route %>/<%= query.type %>' method='post'>
+                <input type='hidden' name='page' value='<%= query.page + 1 %>'>
+                <input type='hidden' name='<%= query.type %>' value='<%= query.data %>'>
+                <button type='submit'>Next</button>
+            </form>
+            <% } %>
+        </div>
+    </body>
+</html>

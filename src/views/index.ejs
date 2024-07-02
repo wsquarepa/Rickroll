@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <title>Logger | Home</title>
+    </head>
+    <body>
+        <h1>Select a Search Function</h1>
+        <div>
+            <form action='<%= base_route %>/ip' method='post'>
+                <input type='text' name='ip' placeholder='Search by IP Address'>
+                <button type='submit'>Search</button>
+            </form>
+            <form action='<%= base_route %>/visitor' method='post'>
+                <input type='text' name='visitor' placeholder='Search by Visitor Name'>
+                <button type='submit'>Search</button>
+            </form>
+            <form action='<%= base_route %>/host' method='post'>
+                <input type='text' name='host' placeholder='Search by Host Name'>
+                <button type='submit'>Search</button>
+            </form>
+            <form action='<%= base_route %>/useragent' method='post'>
+                <input type='text' name='useragent' placeholder='Search by User Agent Fragment'>
+                <button type='submit'>Search</button>
+            </form>
+        </div>
+    </body>
+</html>
