@@ -79,6 +79,12 @@ db.serialize(() => {
 
 // global middleware
 
+// robots.txt disallow all. prevents search engines from indexing the site and following links
+app.get("/robots.txt", (req, res) => {
+    res.type("text/plain");
+    res.send("User-agent: *\nDisallow: /");
+})
+
 app.use(async (req, res, next) => {
     const ip = req.get("cf-connecting-ip") || req.ip;
     const country = req.get("cf-ipcountry");
