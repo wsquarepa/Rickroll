@@ -24,3 +24,4 @@ Rickroll Handler + Webviewer for Rickrolled Users
 - `WEBVIEWER_MAX_SHOWN` - The maximum amount of entries you will see at once. If you have a lower-end server, you might want to lower this number. Default is 20 (relatively low).
 - `PROXYCHECK_API_KEY` - The API key for ProxyCheck.io. This is used to check if the user is using a proxy. This is only used for the webviewer, and won't block users from being rickrolled. If you don't configure this, the webviewer will not return proxy nor location information.
 - `VISITOR_ID_COOKIE_NAME` - The name of the cookie that will be set on the user's browser. This is used to track users across domains. Changing this allows you to better hide the fact that you are tracking them. Default is `visitor_id`.
+- `VISITOR_ID_COOKIE_SECRET` - The secret used to sign the cookie. This should be a random string. Prevents forging visitor ids to spam the database. Default is `secret` (not safe).

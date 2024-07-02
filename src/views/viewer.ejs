@@ -19,8 +19,9 @@
                         <button type='submit'><b><%- data[i].ip %></b></button>
                     </form>
                     <br><br>
-                    <span>Country: <%- data[i].countryCode %></span><br>
-                    <span>VPN: <%- data[i].vpn %></span>
+                    <span>Provider: <%- data[i].ipdata.provider %></span><br>
+                    <span>Location: <%- data[i].ipdata.city %>, <%- data[i].ipdata.country %></span><br>
+                    <span>VPN: <%- data[i].ipdata.vpn %></span>
                     <br><br>
                     <span>Search By:</span>
                     <form class="inline-search" action='<%= query.base_route %>/visitor' method='post'>
@@ -29,13 +30,13 @@
                     </form>
                     <span> | </span>
                     <form class="inline-search" action='<%= query.base_route %>/host' method='post'>
-                        <input type='hidden' name='host' value='<%- data[i].uniqueHost %>'>
+                        <input type='hidden' name='host' value='<%- data[i].host %>'>
                         <button type='submit'>Host</button>
                     </form>
                 </div>
                 <div class="details">
                     <span><b>User Agent:</b> <%- data[i].useragent %></span><br>
-                    <span><%- data[i].method %> <%- data[i].url %> @ <%- data[i].uniqueHost %></span><br>
+                    <span><%- data[i].method %> <%- data[i].url %> @ <%- data[i].host %></span><br>
                     <span><%- data[i].timestamp %></span>
                 </div>
             </div>
