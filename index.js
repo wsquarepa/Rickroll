@@ -143,7 +143,7 @@ webviewerRouter.post("/visitor", async (req, res) => {
     const page = parseInt(req.body.page) || 1;
     const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
 
-    const visitorData = await all(`SELECT * FROM requests WHERE visitorId = ? LIMIT ? OFFSET ?`, [visitorId, WEBVIEWER.MAX_SHOWN, offset]);
+    const visitorData = await all(`SELECT * FROM requests WHERE visitorId = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`, [visitorId, WEBVIEWER.MAX_SHOWN, offset]);
 
     if (!visitorData || visitorData.length === 0) {
         res.render("viewer", { data: [], query: { type: "visitor", data: visitorId, page: page, more: false, base_route: WEBVIEWER.PATH } });
@@ -158,7 +158,7 @@ webviewerRouter.post("/host", async (req, res) => {
     const page = parseInt(req.body.page) || 1;
     const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
 
-    const hostData = await all(`SELECT * FROM requests WHERE uniqueHost = ? LIMIT ? OFFSET ?`, [host, WEBVIEWER.MAX_SHOWN, offset]);
+    const hostData = await all(`SELECT * FROM requests WHERE uniqueHost = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`, [host, WEBVIEWER.MAX_SHOWN, offset]);
 
     if (!hostData || hostData.length === 0) {
         res.render("viewer", { data: [], query: { type: "host", data: host, page: page, more: false, base_route: WEBVIEWER.PATH } });
@@ -174,7 +174,7 @@ webviewerRouter.post("/useragent", async (req, res) => {
     const page = parseInt(req.body.page) || 1;
     const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
 
-    const uaData = await all(`SELECT * FROM requests WHERE useragent LIKE ? LIMIT ? OFFSET ?`, [`%${useragent}%`, WEBVIEWER.MAX_SHOWN, offset]);
+    const uaData = await all(`SELECT * FROM requests WHERE useragent LIKE ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`, [`%${useragent}%`, WEBVIEWER.MAX_SHOWN, offset]);
 
     if (!uaData || uaData.length === 0) {
         res.render("viewer", { data: [], query: { type: "useragent", data: useragent, page: page, more: false, base_route: WEBVIEWER.PATH } });
@@ -189,7 +189,7 @@ webviewerRouter.post("/ip", async (req, res) => {
     const page = parseInt(req.body.page) || 1;
     const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
 
-    const ipData = await all(`SELECT * FROM requests WHERE ip = ? LIMIT ? OFFSET ?`, [ip, WEBVIEWER.MAX_SHOWN, offset]);
+    const ipData = await all(`SELECT * FROM requests WHERE ip = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`, [ip, WEBVIEWER.MAX_SHOWN, offset]);
 
     if (!ipData || ipData.length === 0) {
         res.render("viewer", { data: [], query: { type: "ip", data: ip, page: page, more: false, base_route: WEBVIEWER.PATH } });
