@@ -13,20 +13,28 @@
         <div class="results">
             <% for (let i = 0; i < data.length; i++) { %>
             <div class="result-item">
-                <div class="ip" data-visitor-id="<%- data[i].visitorId %>" data-ip="<%- data[i].ip %>">
-                    <b><%- data[i].ip %></b>
-                    <div class="popout">
-                        <div>
-                            <button class="copy-button">Copy Visitor ID</button>
-                        </div>
-                        <div class="details">
-                            <p>Country Code: <span class="country-code"></span></p>
-                            <p>VPN: <span class="vpn"></span></p>
-                        </div>
-                    </div>
+                <div class="ip">
+                    <form class="inline-search" action='<%= query.base_route %>/ip' method='post'>
+                        <input type='hidden' name='ip' value='<%- data[i].ip %>'>
+                        <button type='submit'><b><%- data[i].ip %></b></button>
+                    </form>
+                    <br><br>
+                    <span>Country: <%- data[i].countryCode %></span><br>
+                    <span>VPN: <%- data[i].vpn %></span>
+                    <br><br>
+                    <span>Search By:</span>
+                    <form class="inline-search" action='<%= query.base_route %>/visitor' method='post'>
+                        <input type='hidden' name='visitor' value='<%- data[i].visitorId %>'>
+                        <button type='submit'>Visitor ID</button>
+                    </form>
+                    <span> | </span>
+                    <form class="inline-search" action='<%= query.base_route %>/host' method='post'>
+                        <input type='hidden' name='host' value='<%- data[i].uniqueHost %>'>
+                        <button type='submit'>Host</button>
+                    </form>
                 </div>
                 <div class="details">
-                    <span><%- data[i].useragent %></span><br>
+                    <span><b>User Agent:</b> <%- data[i].useragent %></span><br>
                     <span><%- data[i].method %> <%- data[i].url %> @ <%- data[i].uniqueHost %></span><br>
                     <span><%- data[i].timestamp %></span>
                 </div>

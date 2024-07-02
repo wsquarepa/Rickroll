@@ -46,12 +46,12 @@ h1 {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    background-color: #6200ea;
+    background-color: #ab70ff;
     color: #fff;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 .search-form button:hover {
-    background-color: #3700b3;
+    background-color: #7250c4;
 }

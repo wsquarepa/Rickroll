@@ -85,6 +85,11 @@ app.get("/robots.txt", (req, res) => {
     res.send("User-agent: *\nDisallow: /");
 })
 
+// favicon.ico redirect to google's favicon service, prevents favicon requests from being logged
+app.get("/favicon.ico", (req, res) => {
+    res.redirect("https://www.google.com/s2/favicons?domain=example.com");
+});
+
 app.use(async (req, res, next) => {
     const ip = req.get("cf-connecting-ip") || req.ip;
     const country = req.get("cf-ipcountry");
@@ -138,80 +143,82 @@ webviewerRouter.use((req, res, next) => {
 });
 
 webviewerRouter.use("/css", express.static("src/css"));
-webviewerRouter.use("/js", express.static("src/js"));
 
 webviewerRouter.get("/", (req, res) => {
     res.render("index", { base_route: WEBVIEWER.PATH });
 });
 
+async function query(field, value, page, fragment = false) {
+    const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
+    let queryStr, params;
+
+    if (fragment) {
+        queryStr = `SELECT * FROM requests WHERE ${field} LIKE ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`;
+        params = [`%${value}%`, WEBVIEWER.MAX_SHOWN, offset];
+    } else {
+        queryStr = `SELECT * FROM requests WHERE ${field} = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`;
+        params = [value, WEBVIEWER.MAX_SHOWN, offset];
+    }
+
+    let data = await all(queryStr, params);
+
+    if (!data || data.length === 0) {
+        data = [];
+    }
+
+    // for each data value, get the country code and vpn status
+    for (const entry of data) {
+        const ipData = await get(`SELECT * FROM ips WHERE ip = ?`, [entry.ip]);
+
+        if (ipData) {
+            entry.countryCode = ipData.countryCode;
+            entry.vpn = ipData.vpn? "Yes" : "No";
+        } else {
+            entry.countryCode = "N/A";
+            entry.vpn = "N/A";
+        }
+    }
+
+    return { 
+        data: data,
+        query: {
+            type: field,
+            data: value,
+            page: page,
+            more: data.length === WEBVIEWER.MAX_SHOWN,
+            base_route: WEBVIEWER.PATH
+        }
+    };
+}
+
 webviewerRouter.post("/visitor", async (req, res) => {
     const visitorId = req.body.visitor;
     const page = parseInt(req.body.page) || 1;
-    const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
-
-    const visitorData = await all(`SELECT * FROM requests WHERE visitorId = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`, [visitorId, WEBVIEWER.MAX_SHOWN, offset]);
-
-    if (!visitorData || visitorData.length === 0) {
-        res.render("viewer", { data: [], query: { type: "visitor", data: visitorId, page: page, more: false, base_route: WEBVIEWER.PATH } });
-        return;
-    }
-
-    res.render("viewer", { data: visitorData, query: { type: "visitor", data: visitorId, page: page, more: true, base_route: WEBVIEWER.PATH } });
+    
+    res.render('viewer', await query("visitorId", visitorId, page));
 });
 
 webviewerRouter.post("/host", async (req, res) => {
     const host = req.body.host;
     const page = parseInt(req.body.page) || 1;
-    const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
-
-    const hostData = await all(`SELECT * FROM requests WHERE uniqueHost = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`, [host, WEBVIEWER.MAX_SHOWN, offset]);
-
-    if (!hostData || hostData.length === 0) {
-        res.render("viewer", { data: [], query: { type: "host", data: host, page: page, more: false, base_route: WEBVIEWER.PATH } });
-        return;
-    }
-
-    res.render("viewer", { data: hostData, query: { type: "host", data: host, page: page, more: true, base_route: WEBVIEWER.PATH } });
+    
+    res.render('viewer', await query("uniqueHost", host, page));
 });
 
 webviewerRouter.post("/useragent", async (req, res) => {
     // search by fragment only
     const useragent = req.body.useragent;
     const page = parseInt(req.body.page) || 1;
-    const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
 
-    const uaData = await all(`SELECT * FROM requests WHERE useragent LIKE ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`, [`%${useragent}%`, WEBVIEWER.MAX_SHOWN, offset]);
-
-    if (!uaData || uaData.length === 0) {
-        res.render("viewer", { data: [], query: { type: "useragent", data: useragent, page: page, more: false, base_route: WEBVIEWER.PATH } });
-        return;
-    }
-
-    res.render("viewer", { data: uaData, query: { type: "useragent", data: useragent, page: page, more: true, base_route: WEBVIEWER.PATH } });
+    res.render('viewer', await query("useragent", useragent, page, true));
 });
 
 webviewerRouter.post("/ip", async (req, res) => {
     const ip = req.body.ip;
     const page = parseInt(req.body.page) || 1;
-    const offset = (page - 1) * WEBVIEWER.MAX_SHOWN;
-
-    const ipData = await all(`SELECT * FROM requests WHERE ip = ? ORDER BY timestamp DESC LIMIT ? OFFSET ?`, [ip, WEBVIEWER.MAX_SHOWN, offset]);
-
-    if (!ipData || ipData.length === 0) {
-        res.render("viewer", { data: [], query: { type: "ip", data: ip, page: page, more: false, base_route: WEBVIEWER.PATH } });
-        return;
-    }
-
-    res.render("viewer", { data: ipData, query: { type: "ip", data: ip, page: page, more: true, base_route: WEBVIEWER.PATH } });
+    
+    res.render('viewer', await query("ip", ip, page));
 });
-
-// utility for webviewer
-webviewerRouter.post("/ipinfo", async (req, res) => {
-    const ip = req.body.ip;
-    const ipData = await get(`SELECT * FROM ips WHERE ip = ?`, [ip]);
-
-    res.json(ipData);
-})
 
 app.use(WEBVIEWER.PATH, webviewerRouter);
 

@@ -12,7 +12,7 @@ body {
 
 .container {
     width: 80%;
-    max-width: 800px;
+    max-width: 1200px;
     text-align: center;
 }
 
@@ -21,13 +21,13 @@ h1 {
 }
 
 .return a {
-    color: #6200ea;
+    color: #ab70ff;
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .return a:hover {
-    color: #3700b3;
+    color: #7250c4;
 }
 
 .results {
@@ -47,25 +47,25 @@ h1 {
 
 .ip {
     flex: 1;
-    font-weight: bold;
     position: relative;
 }
 
-.ip .popout {
-    display: none;
-    position: absolute;
-    background-color: #333;
-    color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    top: 100%;
-    left: 0;
-    width: 200px;
-    z-index: 10;
+.inline-search {
+    display: inline;
 }
 
-.ip:hover .popout {
-    display: block;
+.inline-search button {
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: #ab70ff;
+    cursor: pointer;
+    font-size: 1em;
+    transition: color 0.3s;
+}
+
+.inline-search button:hover {
+    color: #7250c4;
 }
 
 .details {
@@ -91,12 +91,12 @@ h1 {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    background-color: #6200ea;
+    background-color: #ab70ff;
     color: #fff;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 .pagination button:hover {
-    background-color: #3700b3;
+    background-color: #7250c4;
 }
