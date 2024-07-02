@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     copyButtons.forEach(button => {
         button.addEventListener("click", (event) => {
-            const visitorId = event.target.closest(".popout").querySelector(".visitor-id").textContent;
+            const visitorId = event.target.closest(".ip").getAttribute("data-visitor-id");
             navigator.clipboard.writeText(visitorId).then(() => {
                 // ok
             });
