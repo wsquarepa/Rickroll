@@ -9,7 +9,7 @@ import crypto from "crypto";
 
 const PORT = process.env.PORT || 8080;
 const DOMAIN = process.env.DOMAIN || "example.com";
-const REDIRECT_URL = process.env.REDIRECT_URL || "https://youtube.com/watch?v=dqw4w9wgxcq?autoplay=1";
+const REDIRECT_URL = process.env.REDIRECT_URL || "https://www.youtube.com/watch?v=dQw4w9WgXcQ?autoplay=1";
 const VISITOR_ID_COOKIE_NAME = process.env.VISITOR_ID_COOKIE_NAME || "visitor_id";
 const WEBVIEWER = {
     HOST: process.env.WEBVIEWER_HOST,
