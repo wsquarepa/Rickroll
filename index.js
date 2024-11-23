@@ -29,8 +29,30 @@ if (!fs.existsSync("data")) {
 const db = Database("data/data.db");
 db.pragma("journal_mode = WAL");
 
-db.prepare("CREATE TABLE IF NOT EXISTS ips (id INTEGER PRIMARY KEY AUTOINCREMENT, ip TEXT NOT NULL, country TEXT NOT NULL, city TEXT NOT NULL, provider TEXT NOT NULL, vpn BOOLEAN DEFAULT FALSE)").run();
-db.prepare("CREATE TABLE IF NOT EXISTS requests (id INTEGER PRIMARY KEY AUTOINCREMENT, ip TEXT NOT NULL, url TEXT NOT NULL, method TEXT NOT NULL, useragent TEXT NOT NULL, visitorId TEXT NOT NULL, host TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
+db.prepare(`
+    CREATE TABLE IF NOT EXISTS ip_cache (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        ip TEXT NOT NULL,
+        country TEXT NOT NULL,
+        city TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        vpn BOOLEAN DEFAULT FALSE
+    )
+`).run();
+
+db.prepare(`
+    CREATE TABLE IF NOT EXISTS requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip TEXT NOT NULL,
+        url TEXT NOT NULL,
+        method TEXT NOT NULL,
+        useragent TEXT NOT NULL,
+        visitorId TEXT NOT NULL,
+        host TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+`).run();
 
 const app = express();
 app.use(cookieParser());
@@ -57,7 +79,6 @@ app.get("/favicon.ico", (req, res) => {
 
 app.use(async (req, res, next) => {
     const ip = req.get("cf-connecting-ip") || req.ip;
-    const country = req.get("cf-ipcountry");
 
     const host = req.get("host");
 
@@ -92,25 +113,6 @@ app.use(async (req, res, next) => {
 
     if (!visitorId) {
         visitorId = crypto.randomBytes(16).toString("hex");
-    }
-
-    // check if ip is in database already
-    const ipData = db.prepare(`SELECT * FROM ips WHERE ip = ?`).get(ip);
-
-    if (!ipData && PROXYCHECK_API_KEY) {
-        const pcRequest = await fetch(`https://proxycheck.io/v2/${ip}?key=${PROXYCHECK_API_KEY}&vpn=1&asn=1`);
-
-        if (pcRequest.ok) {
-            const pcData = await pcRequest.json();
-
-            db.prepare(`INSERT INTO ips (ip, country, city, provider, vpn) VALUES (?, ?, ?, ?, ?)`).run(
-                ip,
-                pcData[ip].country,
-                pcData[ip].city,
-                pcData[ip].provider,
-                pcData[ip].proxy == "yes"
-            );
-        }
     }
 
     db.prepare(`INSERT INTO requests (ip, url, method, useragent, visitorId, host) VALUES (?, ?, ?, ?, ?, ?)`).run(ip, url, method, useragent, visitorId, host);
@@ -165,7 +167,30 @@ async function query(field, value, page, fragment = false) {
 
     // for each data value, get the country code and vpn status
     for (const entry of data) {
-        const ipData = db.prepare(`SELECT * FROM ips WHERE ip = ?`).get(entry.ip);
+        let ipData = db.prepare(`SELECT * FROM ip_cache WHERE ip = ? AND timestamp > datetime('now', '-1 day')`).get(entry.ip);
+
+        if (!ipData && PROXYCHECK_API_KEY) {
+            const pcRequest = await fetch(`https://proxycheck.io/v2/${ip}?key=${PROXYCHECK_API_KEY}&vpn=1&asn=1`);
+
+            if (pcRequest.ok) {
+                const pcData = await pcRequest.json();
+
+                db.prepare(`INSERT INTO ip_cache (ip, country, city, provider, vpn) VALUES (?, ?, ?, ?, ?)`).run(
+                    ip,
+                    pcData[ip].country,
+                    pcData[ip].city,
+                    pcData[ip].provider,
+                    pcData[ip].proxy == "yes"
+                );
+
+                ipData = {
+                    country: pcData[ip].country,
+                    city: pcData[ip].city,
+                    provider: pcData[ip].provider,
+                    vpn: pcData[ip].proxy == "yes"
+                };
+            }
+        }
 
         if (ipData) {
             entry.ipdata = ipData;
@@ -174,7 +199,7 @@ async function query(field, value, page, fragment = false) {
                 country: "N/A",
                 city: "N/A",
                 provider: "N/A",
-                vpn: false,
+                vpn: false
             };   
         }
     }
