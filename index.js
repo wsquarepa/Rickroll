@@ -1,10 +1,12 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import fs from "fs";
+
 import express from "express";
 import cookieParser from "cookie-parser";
 import fetch from "node-fetch";
-import sqlite3 from "sqlite3";
+import Database from "better-sqlite3";
 import crypto from "crypto";
 
 const PORT = process.env.PORT || 8080;
@@ -20,6 +22,16 @@ const WEBVIEWER = {
 };
 const PROXYCHECK_API_KEY = process.env.PROXYCHECK_API_KEY;
 
+if (!fs.existsSync("data")) {
+    fs.mkdirSync("data");
+}
+
+const db = Database("data/data.db");
+db.pragma("journal_mode = WAL");
+
+db.prepare("CREATE TABLE IF NOT EXISTS ips (id INTEGER PRIMARY KEY AUTOINCREMENT, ip TEXT NOT NULL, country TEXT NOT NULL, city TEXT NOT NULL, provider TEXT NOT NULL, vpn BOOLEAN DEFAULT FALSE)").run();
+db.prepare("CREATE TABLE IF NOT EXISTS requests (id INTEGER PRIMARY KEY AUTOINCREMENT, ip TEXT NOT NULL, url TEXT NOT NULL, method TEXT NOT NULL, useragent TEXT NOT NULL, visitorId TEXT NOT NULL, host TEXT NOT NULL, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
+
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
@@ -29,56 +41,6 @@ app.set("view engine", "ejs");
 app.set("views", "src/views");
 
 app.disable("x-powered-by");
-
-const db = new sqlite3.Database("database.sqlite");
-
-async function get(query, params) {
-    return new Promise((resolve, reject) => {
-        db.get(query, params, (err, row) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-
-            resolve(row);
-        });
-    });
-}
-
-async function all(query, params) {
-    return new Promise((resolve, reject) => {
-        db.all(query, params, (err, rows) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-
-            resolve(rows);
-        });
-    });
-}
-
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS ips (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ip TEXT NOT NULL,
-        country TEXT NOT NULL,
-        city TEXT NOT NULL,
-        provider TEXT NOT NULL,
-        vpn BOOLEAN DEFAULT FALSE
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS requests (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ip TEXT NOT NULL,
-        url TEXT NOT NULL,
-        method TEXT NOT NULL,
-        useragent TEXT NOT NULL,
-        visitorId TEXT NOT NULL,
-        host TEXT NOT NULL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
-});
 
 // global middleware
 
@@ -133,7 +95,7 @@ app.use(async (req, res, next) => {
     }
 
     // check if ip is in database already
-    const ipData = await get(`SELECT * FROM ips WHERE ip = ?`, [ip]);
+    const ipData = db.prepare(`SELECT * FROM ips WHERE ip = ?`).get(ip);
 
     if (!ipData && PROXYCHECK_API_KEY) {
         const pcRequest = await fetch(`https://proxycheck.io/v2/${ip}?key=${PROXYCHECK_API_KEY}&vpn=1&asn=1`);
@@ -141,17 +103,17 @@ app.use(async (req, res, next) => {
         if (pcRequest.ok) {
             const pcData = await pcRequest.json();
 
-            db.run(`INSERT INTO ips (ip, country, city, provider, vpn) VALUES (?, ?, ?, ?, ?)`, [
+            db.prepare(`INSERT INTO ips (ip, country, city, provider, vpn) VALUES (?, ?, ?, ?, ?)`).run(
                 ip,
                 pcData[ip].country,
                 pcData[ip].city,
                 pcData[ip].provider,
-                pcData[ip].proxy == "yes",
-            ]);
+                pcData[ip].proxy == "yes"
+            );
         }
     }
 
-    db.run(`INSERT INTO requests (ip, url, method, useragent, visitorId, host) VALUES (?, ?, ?, ?, ?, ?)`, [ip, url, method, useragent, visitorId, host]);
+    db.prepare(`INSERT INTO requests (ip, url, method, useragent, visitorId, host) VALUES (?, ?, ?, ?, ?, ?)`).run(ip, url, method, useragent, visitorId, host);
 
     // set visitor id cookie
     const hmac = crypto.createHmac("sha256", VISITOR_ID_COOKIE_SECRET);
@@ -195,7 +157,7 @@ async function query(field, value, page, fragment = false) {
         params = [value, WEBVIEWER.MAX_SHOWN, offset];
     }
 
-    let data = await all(queryStr, params);
+    let data = db.prepare(queryStr).all(...params);
 
     if (!data || data.length === 0) {
         data = [];
@@ -203,7 +165,7 @@ async function query(field, value, page, fragment = false) {
 
     // for each data value, get the country code and vpn status
     for (const entry of data) {
-        const ipData = await get(`SELECT * FROM ips WHERE ip = ?`, [entry.ip]);
+        const ipData = db.prepare(`SELECT * FROM ips WHERE ip = ?`).get(entry.ip);
 
         if (ipData) {
             entry.ipdata = ipData;
