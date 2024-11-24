@@ -194,6 +194,9 @@ async function query(field, value, page, fragment = false) {
 
         if (ipData) {
             entry.ipdata = ipData;
+
+            // flush all entries older than 1 day
+            db.prepare(`DELETE FROM ip_cache WHERE timestamp < datetime('now', '-1 day')`).run();
         } else {
             entry.ipdata = {
                 country: "N/A",
